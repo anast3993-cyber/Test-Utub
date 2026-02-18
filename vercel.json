@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "name": "youtube-summary-app",
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
