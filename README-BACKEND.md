@@ -59,6 +59,10 @@ cp .env.example .env.local
 
 Генерирует саммари для YouTube видео.
 
+**Примечание**: Поле `hasTranscript` указывает, были ли найдены субтитры у видео:
+- `true` - субтитры найдены, сгенерировано полноценное саммари
+- `false` - субтитры отсутствуют, в поле `summary` будет сообщение об этом
+
 **Request:**
 ```json
 {
@@ -71,7 +75,8 @@ cp .env.example .env.local
 {
   "videoId": "dQw4w9WgXcQ",
   "summary": "Основные пункты из видео...",
-  "originalUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  "originalUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "hasTranscript": true
 }
 ```
 

@@ -2,7 +2,7 @@
  * Unit tests for YouTube URL parser utility
  */
 
-import { extractVideoId, isValidYouTubeUrl, normalizeYouTubeUrl } from '@/lib/youtube';
+import { extractVideoId, isValidYouTubeUrl, normalizeYouTubeUrl } from '@/src/lib/youtube';
 
 describe('YouTube URL Parser', () => {
   describe('extractVideoId', () => {
@@ -75,6 +75,38 @@ describe('YouTube URL Parser', () => {
     it('should return null for invalid URL', () => {
       const result = normalizeYouTubeUrl('https://google.com');
       expect(result).toBeNull();
+    });
+  });
+
+  describe('YouTube URL with special characters', () => {
+    it('should extract video ID from URL with special characters', () => {
+      const result = extractVideoId('https://www.youtube.com/watch?v=JtkyYIdFrkg&si=y_ndq2pzy_76mTDT');
+      expect(result).toBe('JtkyYIdFrkg');
+    });
+
+    it('should extract video ID from URL with session ID', () => {
+      const result = extractVideoId('https://youtu.be/JtkyYIdFrkg?si=y_ndq2pzy_76mTDT');
+      expect(result).toBe('JtkyYIdFrkg');
+    });
+
+    it('should extract video ID from URL with multiple parameters', () => {
+      const result = extractVideoId('https://www.youtube.com/watch?v=JtkyYIdFrkg&t=120&si=y_ndq2pzy_76mTDT');
+      expect(result).toBe('JtkyYIdFrkg');
+    });
+
+    it('should extract video ID from URL with session ID in watch format', () => {
+      const result = extractVideoId('https://www.youtube.com/watch?v=JtkyYIdFrkg&si=y_ndq2pzy_76mTDT');
+      expect(result).toBe('JtkyYIdFrkg');
+    });
+
+    it('should extract video ID from URL with session ID in shorts format', () => {
+      const result = extractVideoId('https://www.youtube.com/shorts/JtkyYIdFrkg?si=y_ndq2pzy_76mTDT');
+      expect(result).toBe('JtkyYIdFrkg');
+    });
+
+    it('should extract video ID from URL with session ID in embed format', () => {
+      const result = extractVideoId('https://www.youtube.com/embed/JtkyYIdFrkg?si=y_ndq2pzy_76mTDT');
+      expect(result).toBe('JtkyYIdFrkg');
     });
   });
 });

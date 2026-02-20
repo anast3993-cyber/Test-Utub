@@ -22,6 +22,7 @@ export interface SummaryResponse {
   videoId: string;
   summary: string;
   originalUrl: string;
+  hasTranscript: boolean;
 }
 
 /**
@@ -68,17 +69,27 @@ export async function generateVideoSummary(url: string): Promise<SummaryResponse
     // Step 1: Get transcript from Supadata
     const transcriptResult = await getTranscript(videoId);
 
-    // Step 2: Generate summary using Gemini
-    const summary = await generateSummary(transcriptResult.fullText);
+    // Step 2: Generate summary using Gemini (with caching by videoId)
+    const summary = await generateSummary(transcriptResult.fullText, videoId);
 
     return {
       videoId,
       summary,
       originalUrl: url,
+      hasTranscript: true,
     };
   } catch (error) {
     // Handle custom errors
     if (error && typeof error === 'object' && 'code' in error) {
+      const err = error as { code: string; error: string };
+      if (err.code === 'GENERATION_FAILED' && err.error.includes('transcript')) {
+        return {
+          videoId,
+          summary: 'К сожалению, для этого видео нет субтитров. Попробуйте другое видео с субтитрами.',
+          originalUrl: url,
+          hasTranscript: false,
+        };
+      }
       throw error;
     }
 

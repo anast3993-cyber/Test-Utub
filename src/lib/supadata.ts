@@ -40,6 +40,19 @@ export interface TranscriptResult {
 }
 
 /**
+ * Cleans and normalizes transcript text to improve accuracy
+ * @param text - Raw transcript text
+ * @returns Cleaned and normalized text
+ */
+function cleanTranscriptText(text: string): string {
+  return text
+    .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+    .replace(/([.!?])\s*([A-Z])/g, '$1 $2')  // Ensure proper spacing after punctuation
+    .replace(/([a-z])\s*([A-Z])/g, '$1. $2')  // Add period between sentences if missing
+    .trim();
+}
+
+/**
  * Fetches transcript for a YouTube video
  * @param videoId - YouTube video ID
  * @returns Transcript result with full text
@@ -55,13 +68,32 @@ export async function getTranscript(videoId: string): Promise<TranscriptResult> 
       throw new Error('Transcript not available for this video');
     }
 
+    // Check if transcript is from official source
+    const isOfficial = transcriptData.content.every((item: TranscriptItem) => item.text.includes('[') || item.text.includes(']')) || transcriptData.content.length > 50;
+
+    // Filter out low-quality transcripts
+    const filteredContent = transcriptData.content.filter((item: TranscriptItem) => {
+      // Remove items with only numbers or short phrases
+      const text = item.text.trim();
+      return text.length > 3 && !/^[0-9\s]+$/.test(text);
+    });
+
     // Combine all transcript text into one string
-    const fullText = transcriptData.content.map((item: TranscriptItem) => item.text).join(' ');
+    const rawText = filteredContent.map((item: TranscriptItem) => item.text).join(' ');
+
+    // Clean and improve the transcript text
+    const fullText = cleanTranscriptText(rawText);
+
+    // Debug logging
+    console.log('Raw transcript preview:', rawText.substring(0, 200) + '...');
+    console.log('Cleaned transcript preview:', fullText.substring(0, 200) + '...');
+    console.log('Is official transcript:', isOfficial);
 
     return {
       videoId,
       content: transcriptData.content,
       fullText,
+      isOfficial,
     };
   } catch (error) {
     if (error instanceof Error) {
