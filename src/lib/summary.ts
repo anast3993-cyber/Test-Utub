@@ -33,6 +33,22 @@ export interface SummaryError {
   code?: string;
 }
 
+const NO_TRANSCRIPT_MESSAGE =
+  'К сожалению, для этого видео нет субтитров. Попробуйте другое видео с субтитрами.';
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object' && 'error' in error) {
+    const err = error as { error?: unknown };
+    return typeof err.error === 'string' ? err.error : String(err.error);
+  }
+
+  return '';
+}
+
 /**
  * Main function to generate video summary
  * @param url - YouTube video URL
@@ -79,25 +95,31 @@ export async function generateVideoSummary(url: string): Promise<SummaryResponse
       hasTranscript: true,
     };
   } catch (error) {
+    const errorMessage = getErrorMessage(error);
+    const normalizedMessage = errorMessage.toLowerCase();
+
+    if (
+      normalizedMessage.includes('transcript') &&
+      normalizedMessage.includes('not available')
+    ) {
+      return {
+        videoId,
+        summary: NO_TRANSCRIPT_MESSAGE,
+        originalUrl: url,
+        hasTranscript: false,
+      };
+    }
+
     // Handle custom errors
     if (error && typeof error === 'object' && 'code' in error) {
-      const err = error as { code: string; error: string };
-      if (err.code === 'GENERATION_FAILED' && err.error.includes('transcript')) {
-        return {
-          videoId,
-          summary: 'К сожалению, для этого видео нет субтитров. Попробуйте другое видео с субтитрами.',
-          originalUrl: url,
-          hasTranscript: false,
-        };
-      }
       throw error;
     }
 
     // Generic error handling
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+    const fallbackMessage = errorMessage || 'Unknown error occurred';
+
     throw {
-      error: `Failed to generate summary: ${errorMessage}`,
+      error: `Failed to generate summary: ${fallbackMessage}`,
       code: 'GENERATION_FAILED',
     };
   }

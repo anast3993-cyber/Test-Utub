@@ -25,7 +25,38 @@ export function extractVideoId(url: string): string | null {
     return null;
   }
 
-  const match = url.match(YOUTUBE_REGEX);
+  const trimmedUrl = url.trim();
+
+  try {
+    const parsedUrl = new URL(trimmedUrl);
+    const hostname = parsedUrl.hostname.replace(/^www\./, '').toLowerCase();
+
+    if (hostname === 'youtu.be') {
+      const pathId = parsedUrl.pathname.split('/').filter(Boolean)[0];
+      if (pathId && pathId.length === 11) {
+        return pathId;
+      }
+    }
+
+    if (hostname === 'youtube.com' || hostname.endsWith('.youtube.com')) {
+      const vParam = parsedUrl.searchParams.get('v');
+      if (vParam && vParam.length === 11) {
+        return vParam;
+      }
+
+      const pathSegments = parsedUrl.pathname.split('/').filter(Boolean);
+      if (pathSegments.length >= 2) {
+        const [type, id] = pathSegments;
+        if (['embed', 'v', 'shorts'].includes(type) && id && id.length === 11) {
+          return id;
+        }
+      }
+    }
+  } catch {
+    // Ignore URL parsing errors and fall back to regex.
+  }
+
+  const match = trimmedUrl.match(YOUTUBE_REGEX);
   return match && match[2].length === 11 ? match[2] : null;
 }
 

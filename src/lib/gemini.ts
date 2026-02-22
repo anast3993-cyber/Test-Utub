@@ -33,7 +33,7 @@ const CACHE_TTL = 3600000; // 1 hour in milliseconds
  */
 let currentKeyIndex = 0;
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 10000; // 10 seconds between requests to avoid rate limits
+const MIN_REQUEST_INTERVAL = 5000; // 5 seconds between requests to avoid rate limits
 
 function getGenAI(): GoogleGenerativeAI {
   const apiKeys = getApiKeys();
@@ -61,7 +61,8 @@ function getGenAI(): GoogleGenerativeAI {
   }
   lastRequestTime = Date.now();
 
-  console.log(`🔑 Using Gemini API key ${keyIndex + 1}/${apiKeys.length}`);
+  const maskedKey = apiKey.substring(0, 10) + '...' + apiKey.substring(apiKey.length - 5);
+  console.log(`🔑 Using Gemini API key ${keyIndex + 1}/${apiKeys.length}: ${maskedKey}`);
   return new GoogleGenerativeAI(apiKey);
 }
 
