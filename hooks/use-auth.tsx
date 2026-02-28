@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('supabase_token', data.session.access_token)
       setState({
         user: data.user,
-        credits: 5, // New users get 5 credits
+        credits: data.credits ?? 5, // Use credits from response or default to 5
         loading: false
       })
     }

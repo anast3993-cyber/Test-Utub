@@ -1,0 +1,10 @@
+Preparing deployment...
+Creating deployment package...
+Detected framework: nextjs
+Deploying...
+Error: Could not extract preview URL from response
+Request Entity Too Large
+
+FUNCTION_PAYLOAD_TOO_LARGE
+
+fra1::vgbzb-1772205963359-2e282fbd0a06

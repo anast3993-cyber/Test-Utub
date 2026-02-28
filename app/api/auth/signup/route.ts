@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { getUserProfile } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,6 +35,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         message: 'Регистрация успешна! Проверьте email для подтверждения.',
         requiresEmailConfirmation: true
+      })
+    }
+
+    // Get user profile and credits after successful registration
+    if (data.user && data.session) {
+      const profile = await getUserProfile(data.user.id)
+      
+      return NextResponse.json({
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          ...profile?.profile
+        },
+        session: data.session,
+        credits: profile?.credits?.credits ?? 5
       })
     }
 
